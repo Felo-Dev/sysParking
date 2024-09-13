@@ -77,7 +77,7 @@ class clientes extends Controller
         ]);
 
         if ($validator->fails()) {
-            $invalidFields = implode(', ', array_keys($validator->errors()->toArray()));    
+            $invalidFields = implode(', ', array_keys($validator->errors()->toArray()));
 
             $data = [
                 "status" => 400,

@@ -14,6 +14,9 @@ return new class extends Migration
         Schema::create('tarifa', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
+            $table->string('tarifa_valor');
+            $table->string('tarifa_hora_pago');
+            $table->string('tipo_vehiculo');
         });
     }
 
