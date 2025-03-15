@@ -5,16 +5,12 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\clientes;
 use App\Http\Controllers\gestionVehiculos;
 use App\Http\Controllers\tarifas;
+use App\Http\Controllers\Users;
+use App\Http\Controllers\Estadistica;
 
-const USER_ID_ROUTE = '/user/{id}';
-const TARIFA_ID_ROUTE = '/tarifas/{id}';
+Route::get('/clientes', [clientes::class, 'index']);
+Route::post('/clientes', [clientes::class, 'store']);
 
-Route::get('/user', [clientes::class, 'index']);
-Route::post('/user', [clientes::class, 'store']);
-Route::put(USER_ID_ROUTE, [clientes::class, 'update']);
-Route::post(USER_ID_ROUTE, [clientes::class, 'show']);
-Route::delete(USER_ID_ROUTE, [clientes::class, 'destroy']);
-Route::get('/user/{id}', [clientes::class, 'showByPlaca']);
     
 Route::get('/vehiculo', [gestionVehiculos::class, 'index']);
 Route::post('/vehiculo', [gestionVehiculos::class, 'store']);
@@ -22,6 +18,14 @@ Route::post('/vehiculo', [gestionVehiculos::class, 'store']);
 
 Route::get('/tarifas',[tarifas::class, 'index']);
 Route::post('/tarifas',[tarifas::class, 'store']);
-Route::put(TARIFA_ID_ROUTE, [tarifas::class, 'update']);
-Route::post(TARIFA_ID_ROUTE, [tarifas::class, 'show']);
-Route::delete(TARIFA_ID_ROUTE, [tarifas::class, 'destroy']);
+Route::put('/tarifas/{id}', [tarifas::class, 'update']);
+Route::post('/tarifas/{id}', [tarifas::class, 'show']);
+Route::delete('/tarifas/{id}', [tarifas::class, 'destroy']);
+
+Route::get('users/{id}', [users::class, 'show']);
+Route::get('users', [Users::class, 'index']);
+Route::post('users', [Users::class, 'store']);
+Route::put('users/{id}', [Users::class, 'update']);
+Route::delete('users/{id}', [Users::class, 'destroy']);
+
+Route::get('estadistica', [Estadistica::class, 'index']);

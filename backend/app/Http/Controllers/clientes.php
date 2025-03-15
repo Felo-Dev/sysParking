@@ -4,12 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use App\Models\Usuarios;
+use App\Models\Cliente;
 class clientes extends Controller
 {
     public function index()
     {
-        $cliente = Usuarios::all();
+        $cliente = Cliente::all();
 
         $data = [
             "status" => 200,
@@ -35,12 +35,12 @@ class clientes extends Controller
             $data = [
                 "status" => 400,
                 "data" => $validator->errors(),
-                "errors" => "No se pudo crear el cliente porque los campos : $invalidFields. son requeridos"
+                "errors" => "No se pudo crear el cliente porque los campos : $invalidFields. no tienen el formato correcto"
             ];
             return response()->json($data, 400);
         }
 
-        $cliente = Usuarios:: create([
+        $cliente = Cliente:: create([
             'nombre' => $request->nombre,
             'documento' => $request->documento,
             'placa' => strtoupper($request->placa),
@@ -67,7 +67,7 @@ class clientes extends Controller
 
     public function update(Request $request, $id)
     {
-        $cliente = Usuarios::find($id);
+        $cliente = Cliente::find($id);
         $validator = Validator::make($request->all(), [
             'nombre' => 'required|max:255',
             'documento' => 'required|max:10',
@@ -104,7 +104,7 @@ class clientes extends Controller
 
     public function destroy($id)
     {
-        $cliente = Usuarios::find($id);
+        $cliente = Cliente::find($id);
         $cliente->delete();
         $data = [
             'status' => 200,
@@ -116,7 +116,7 @@ class clientes extends Controller
 
     public function show($id)
     {
-        $cliente = Usuarios::where('placa', strtoupper($placa))->first();
+        $cliente = Cliente::where('placa', strtoupper($placa))->first();
 
         if ($cliente) {
             $data = [
@@ -137,7 +137,7 @@ class clientes extends Controller
     public function showByPlaca($id)
     {
             
-        $cliente = Usuarios::where('id', $id)->first();
+        $cliente = Cliente::where('id', $id)->first();
     
         if ($cliente) {
             $data = [
