@@ -2,11 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cliente;
+use App\Services\AuditService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use App\Models\Cliente;
+
 class clientes extends Controller
 {
+    public function __construct(
+        protected AuditService $auditService
+    ) {}
+
     public function index()
     {
         $cliente = Cliente::all();
@@ -54,13 +60,15 @@ class clientes extends Controller
                 'message' => 'No se pudo crear el cliente'
             ];
             return response()->json($data, 400);
-        }else{
-            $data = [
-                'status' => 200,
-                'message' => 'Cliente creado correctamente'
-            ];
-            return response()->json($data, 200);
         }
+
+        $this->auditService->logCreate('Cliente', $cliente);
+
+        $data = [
+            'status' => 200,
+            'message' => 'Cliente creado correctamente'
+        ];
+        return response()->json($data, 200);
 
 
     }
@@ -86,6 +94,7 @@ class clientes extends Controller
             return response()->json($data, 400);
         }
 
+        $original = $cliente->getOriginal();
         $cliente->update([
             'nombre' => $request->nombre,
             'documento' => $request->documento,
@@ -93,6 +102,7 @@ class clientes extends Controller
             'celular' => $request->celular
         ]);
 
+        $this->auditService->logUpdate('Cliente', $cliente, $original);
 
         $data = [
             'status' => 200,
@@ -105,6 +115,8 @@ class clientes extends Controller
     public function destroy($id)
     {
         $cliente = Cliente::find($id);
+
+        $this->auditService->logDelete('Cliente', $cliente);
         $cliente->delete();
         $data = [
             'status' => 200,
@@ -116,7 +128,7 @@ class clientes extends Controller
 
     public function show($id)
     {
-        $cliente = Cliente::where('placa', strtoupper($placa))->first();
+        $cliente = Cliente::find($id);
 
         if ($cliente) {
             $data = [
@@ -134,18 +146,16 @@ class clientes extends Controller
         }
     }
 
-    public function showByPlaca($id)
+    public function showByPlaca($placa)
     {
-            
-        $cliente = Cliente::where('id', $id)->first();
-    
+        $cliente = Cliente::where('placa', strtoupper($placa))->first();
+
         if ($cliente) {
             $data = [
                 'status' => 200,
                 'data' => $cliente,
                 'message' => 'Cliente encontrado correctamente'
             ];
-            
             return response()->json($data, 200);
         } else {
             $data = [

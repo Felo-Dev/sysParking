@@ -2,27 +2,51 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Hash;
+use App\Models\Role;
+use App\Models\Permiso;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
-
-class User extends Model
+class User extends Authenticatable
 {
-    use HasFactory;
+    use HasApiTokens, Notifiable;
 
     protected $table = 'users';
+
     protected $fillable = [
         'name',
         'email',
         'password',
-        'role'
+        'role_id',
     ];
 
-    public function setPasswordAttribute($value)
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    protected function casts(): array
     {
-        $this->attributes['password'] = Hash::make($value);
+        return [
+            'email_verified_at' => 'datetime',
+        ];
     }
 
-   
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    public function tienePermiso(string $permisoSlug): bool
+    {
+        return $this->role?->permisos()
+            ->where('permisos.slug', $permisoSlug)
+            ->exists() ?? false;
+    }
+
+    protected function serializeDate(\DateTimeInterface $date): string
+    {
+        return $date->format('Y-m-d H:i:s');
+    }
 }

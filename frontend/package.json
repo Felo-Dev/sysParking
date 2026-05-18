@@ -1,25 +1,27 @@
 {
-  "name": "frontend",
-  "license": "0BSD",
-  "version": "1.0.0",
-  "main": "index.js",
+  "name": "sysparking",
+  "private": true,
+  "version": "3.0.0",
+  "type": "module",
   "scripts": {
-    "start": "expo start --dev-client",
-    "android": "expo run:android",
-    "ios": "expo run:ios",
-    "web": "expo start --web"
+    "dev": "vite --port 5173",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "expo": "~52.0.38",
-    "expo-status-bar": "~2.0.1",
-    "react": "18.3.1",
-    "react-native": "0.76.7",
-    "react-dom": "18.3.1",
-    "react-native-web": "~0.19.13",
-    "@expo/metro-runtime": "~4.0.1"
+    "axios": "^1.7.9",
+    "lucide-react": "^0.460.0",
+    "notiflix": "^3.2.8",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.1.0",
+    "recharts": "^2.15.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0"
-  },
-  "private": true
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "vite": "^6.0.0"
+  }
 }

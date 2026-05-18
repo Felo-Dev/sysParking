@@ -2,82 +2,71 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\StoreVehiculoRequest;
+use App\Http\Resources\VehiculoResource;
 use App\Models\GestionVehiculo;
+use App\Services\ParkingService;
+
 class GestionVehiculos extends Controller
 {
+    public function __construct(
+        protected ParkingService $parkingService
+    ) {}
+
     public function index()
     {
-        $vehiculo = GestionVehiculo::all();
+        $vehiculos = GestionVehiculo::orderBy('created_at', 'desc')->get();
 
-        $data = [
+        return response()->json([
             "status" => 200,
-            "data" => $vehiculo
-        ];
-        return  response()->json($data, 200);
+            "data" => VehiculoResource::collection($vehiculos),
+        ], 200);
     }
 
+    public function store(StoreVehiculoRequest $request)
+    {
+        $placa = $request->placa;
 
-    public function store(Request $request)
-{
-    // Verificar si existe un vehículo con la misma placa y hora_salida es NULL
-    $vehiculoExistente = GestionVehiculo::where('placa', strtoupper($request->placa))
-        ->whereNull('hora_salida')
-        ->first();
+        $activo = $this->parkingService->buscarActivo($placa);
 
-    if ($vehiculoExistente) {
-        // Actualizar la hora_salida con la fecha y hora actual del servidor
-        $vehiculoExistente->hora_salida = now();
-        $vehiculoExistente->save();
+        if ($activo) {
+            $vehiculo = $this->parkingService->registrarSalida($placa);
 
-        $data = [
-            "status" => 200,
-            "message" => "La hora de salida del vehículo con placa " . strtoupper($request->placa) . " ha sido actualizada con la fecha y hora actual."
-        ];
-        return response()->json($data, 200);
-    } else {
-         // Crear un nuevo registro
-        $validator = Validator::make($request->all(), [
-            'placa' => 'required|max:6',
-            'hora_entrada' => 'required',
-            'tipo' => 'required|in:1,2|max:1',
-        ]);
-
-        if ($validator->fails()) {
-            $invalidFields = implode(', ', array_keys($validator->errors()->toArray()));
-            $data = [
-                "status" => 400,
-                "data" => $validator->errors(),
-                "message" => "No se pudo registrar el vehículo porque los campos: $invalidFields no son válidos"
-            ];
-            return response()->json($data, 400);
+            return response()->json([
+                "status" => 200,
+                "data" => new VehiculoResource($vehiculo),
+                "message" => "salida: La hora de salida del vehículo con placa {$placa} ha sido actualizada.",
+            ], 200);
         }
-        $vehiculo = GestionVehiculo::create([
-            'placa' => strtoupper($request->placa),
-            'hora_entrada' => $request->hora_entrada,
-            'tipo' => $request->tipo
-        ]);
+
+        $vehiculo = $this->parkingService->registrarEntrada(
+            $placa,
+            $request->tipo,
+            $request->cascos ?? 0,
+            $request->espacio_id
+        );
+
+        return response()->json([
+            "status" => 200,
+            "data" => new VehiculoResource($vehiculo),
+            "message" => "Vehículo creado correctamente",
+        ], 200);
+    }
+
+    public function show($id)
+    {
+        $vehiculo = GestionVehiculo::find($id);
 
         if (!$vehiculo) {
-            $data = [
-                "status" => 400,
-                "data" => $vehiculo,
-                "message" => "No se pudo crear el vehículo"
-            ];
-            return response()->json($data, 400);
+            return response()->json([
+                "status" => 404,
+                "message" => "Vehículo no encontrado",
+            ], 404);
         }
 
-        $data = [
+        return response()->json([
             "status" => 200,
-            "data" => $vehiculo,
-            "message" => "Vehículo creado correctamente"
-        ];
-        return response()->json($data, 200);
+            "data" => new VehiculoResource($vehiculo),
+        ], 200);
     }
-
-   
-}
-
-
 }

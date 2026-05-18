@@ -2,12 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Tarifa;
+use App\Services\AuditService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use App\Models\Tarifa;
 
 class tarifas extends Controller
 {
+    public function __construct(
+        protected AuditService $auditService
+    ) {}
+
     public function index()
     {
         $tarifa = Tarifa::all();
@@ -50,14 +55,16 @@ class tarifas extends Controller
                 "message" => "No se pudo crear la tarifa"
             ];
             return response()->json($data, 400);
-        } else {
-            $data = [
-                "status" => 200,
-                "data" => $tarifa,
-                "message" => "Tarifa creada correctamente"
-            ];
-            return response()->json($data, 200);
         }
+
+        $this->auditService->logCreate('Tarifa', $tarifa);
+
+        $data = [
+            "status" => 200,
+            "data" => $tarifa,
+            "message" => "Tarifa creada correctamente"
+        ];
+        return response()->json($data, 200);
 
 
     }
@@ -83,7 +90,10 @@ class tarifas extends Controller
         }
 
         $tarifa = Tarifa::find($id);
+        $original = $tarifa->getOriginal();
         $tarifa->update($request->all());
+
+        $this->auditService->logUpdate('Tarifa', $tarifa, $original);
         $data = [
             "status" => 200,
             "data" => $tarifa,
@@ -95,6 +105,8 @@ class tarifas extends Controller
     public function destroy($id)
     {
         $tarifa = Tarifa::find($id);
+
+        $this->auditService->logDelete('Tarifa', $tarifa);
         $tarifa->delete();
         $data = [
             "status" => 200,
@@ -122,7 +134,7 @@ class tarifas extends Controller
         $data = [
             "status" => 200,
             "data" => $tarifa,
-            'message' => 'Tarifa encontrado correctamente'
+            'message' => 'Tarifa encontrada correctamente'
         ];
 
         return response()->json($data, 200);
